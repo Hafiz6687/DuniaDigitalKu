@@ -24,14 +24,14 @@
 
         .login-container {
             width: 100%;
-            max-width: 850px;
-            padding: 20px;
+            max-width: 1062px; /* Dibesarkan 25% dari 850px */
+            padding: 25px; /* Dibesarkan 25% dari 20px */
         }
 
         .login-card {
             display: flex;
             background: #ffffff;
-            border-radius: 15px;
+            border-radius: 19px; /* Dibesarkan 25% dari 15px */
             overflow: hidden;
             box-shadow: 0 15px 30px rgba(0,0,0,0.4);
         }
@@ -45,44 +45,44 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 50px 20px;
+            padding: 62px 25px; /* Dibesarkan 25% */
             text-align: center;
         }
 
         .image-placeholder {
-            width: 150px;
-            height: 150px;
+            width: 225px; /* Dibesarkan 50% dari 150px */
+            height: 225px; /* Dibesarkan 50% dari 150px */
             background-color: rgba(255, 255, 255, 0.2);
             border: 2px dashed #ffffff;
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 25px;
-            padding: 10px;
+            margin-bottom: 31px; /* Dibesarkan 25% */
+            padding: 12px;
         }
 
         .image-placeholder span {
-            font-size: 13px;
+            font-size: 16px; /* Dibesarkan 25% */
             color: #f1f1f1;
         }
 
         .left-panel h1 {
-            font-size: 3.5rem;
-            margin-bottom: 5px;
+            font-size: 4.375rem; /* Dibesarkan 25% dari 3.5rem */
+            margin-bottom: 6px;
             font-weight: 700;
-            text-transform: uppercase;
+            /* text-transform: uppercase; - Dibuang untuk membenarkan ejaan MySystem */
         }
 
         .left-panel p {
-            font-size: 1.1rem;
+            font-size: 1.375rem; /* Dibesarkan 25% dari 1.1rem */
             letter-spacing: 1px;
         }
 
         /* Bahagian Kanan (Putih) */
         .right-panel {
             flex: 1;
-            padding: 60px 50px;
+            padding: 75px 62px; /* Dibesarkan 25% */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -90,8 +90,8 @@
 
         .input-group {
             display: flex;
-            margin-bottom: 20px;
-            border-radius: 5px;
+            margin-bottom: 25px; /* Dibesarkan 25% */
+            border-radius: 6px;
             overflow: hidden;
             background: #f0f4f8;
         }
@@ -99,28 +99,28 @@
         .input-group .icon {
             background: #86d4f4; /* Warna ikon biru cair */
             color: white;
-            padding: 15px;
+            padding: 19px; /* Dibesarkan 25% */
             display: flex;
             justify-content: center;
             align-items: center;
-            min-width: 55px;
-            font-size: 1.2rem;
+            min-width: 69px; /* Dibesarkan 25% */
+            font-size: 1.5rem; /* Dibesarkan 25% */
         }
 
         .input-group input {
             border: none;
-            padding: 15px;
+            padding: 19px; /* Dibesarkan 25% */
             flex: 1;
             outline: none;
-            font-size: 16px;
+            font-size: 20px; /* Dibesarkan 25% */
             background: transparent;
         }
 
         .links {
             display: flex;
             justify-content: space-between;
-            font-size: 13px;
-            margin-bottom: 30px;
+            font-size: 16px; /* Dibesarkan 25% */
+            margin-bottom: 37px; /* Dibesarkan 25% */
             color: #555;
         }
 
@@ -139,12 +139,12 @@
 
         .login-btn {
             width: 100%;
-            padding: 15px;
+            padding: 19px; /* Dibesarkan 25% */
             background-color: #63d1ec; /* Biru cair butang */
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 20px; /* Dibesarkan 25% */
             font-weight: bold;
             cursor: pointer;
             transition: background 0.3s;
@@ -154,13 +154,13 @@
             background-color: #4ab8d3;
         }
 
-        /* Responsif untuk skrin telefon */
-        @media (max-width: 768px) {
+        /* Responsif untuk skrin telefon (Breakpoint juga dibesarkan sikit 25%) */
+        @media (max-width: 960px) {
             .login-card {
                 flex-direction: column;
             }
             .right-panel {
-                padding: 40px 30px;
+                padding: 50px 37px;
             }
         }
     </style>
@@ -177,7 +177,7 @@
                     <span>Ruangan Gambar<br>(Upload Kemudian)</span>
                 </div>
                 <h1>MySystem</h1>
-                <p>(DUNIA DIGITAL KU)</p>
+                <p>(Dunia Digital Ku)</p>
             </div>
 
             <!-- Paparan Kanan -->
