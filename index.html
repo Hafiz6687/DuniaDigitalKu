@@ -385,7 +385,7 @@
     </div>
 
     <script>
-        // --- 1. FUNGSI GAMBAR (UPLOAD, LOCK, DRAG, ZOOM) ---
+        // --- 1. FUNGSI GAMBAR DENGAN LOCALSTORAGE (UPLOAD, LOCK, DRAG, ZOOM) ---
         const container = document.getElementById('image-preview-container');
         const fileInput = document.getElementById('upload-image');
         const previewImg = document.getElementById('preview-img');
@@ -395,70 +395,84 @@
 
         let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0;
         let isPanning = false;
-        let isLocked = false; // Status kunci lalai (Unlock)
+        let isLocked = false; 
+
+        // Fungsi Simpan State ke LocalStorage
+        function saveImageState() {
+            if (previewImg.src && previewImg.src !== window.location.href) {
+                const imgData = {
+                    base64: previewImg.src,
+                    scale: scale,
+                    pointX: pointX,
+                    pointY: pointY,
+                    isLocked: isLocked
+                };
+                localStorage.setItem('mysystem_profile_data', JSON.stringify(imgData));
+            }
+        }
 
         // MUAT GAMBAR DARI LOCALSTORAGE
         window.addEventListener('DOMContentLoaded', () => {
-            const savedImage = localStorage.getItem('mysystem_profile_image');
-            if (savedImage) {
-                previewImg.src = savedImage;
+            const savedData = localStorage.getItem('mysystem_profile_data');
+            if (savedData) {
+                const imgData = JSON.parse(savedData);
+                previewImg.src = imgData.base64;
                 previewImg.style.display = 'block';
                 uploadText.style.display = 'none';
                 reuploadBtn.style.display = 'flex';
                 lockBtn.style.display = 'flex';
+
+                scale = imgData.scale || 1;
+                pointX = imgData.pointX || 0;
+                pointY = imgData.pointY || 0;
+                isLocked = imgData.isLocked || false;
+
+                updateLockUI();
                 setTransform();
             }
         });
 
-        // FUNGSI KUNCI/BUKA KUNCI (LOCK / UNLOCK)
-        lockBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Elak trigger drag
-            isLocked = !isLocked;
-            
+        // KAWALAN UI KUNCI (LOCK/UNLOCK)
+        function updateLockUI() {
             if (isLocked) {
-                // Mod Kunci: Ikon mangga tertutup, hilangkan butang kamera, matikan kursor grab
                 lockBtn.innerHTML = '<i class="fa fa-lock"></i>';
                 lockBtn.title = "Buka Kunci";
                 reuploadBtn.style.display = 'none';
                 container.style.cursor = 'default';
             } else {
-                // Mod Buka Kunci: Ikon mangga terbuka, tunjukkan kamera, hidupkan kursor grab
                 lockBtn.innerHTML = '<i class="fa fa-unlock"></i>';
                 lockBtn.title = "Kunci Gambar";
                 reuploadBtn.style.display = 'flex';
                 container.style.cursor = 'grab';
             }
+        }
+
+        lockBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            isLocked = !isLocked;
+            updateLockUI();
+            saveImageState(); // Simpan status kunci
         });
 
-        uploadText.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        reuploadBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if(!isLocked) fileInput.click();
-        });
+        uploadText.addEventListener('click', () => { fileInput.click(); });
+        reuploadBtn.addEventListener('click', (e) => { e.stopPropagation(); if(!isLocked) fileInput.click(); });
 
         fileInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const base64Data = e.target.result;
-                    previewImg.src = base64Data;
+                    previewImg.src = e.target.result;
                     previewImg.style.display = 'block';
                     uploadText.style.display = 'none';
                     reuploadBtn.style.display = 'flex'; 
-                    lockBtn.style.display = 'flex'; // Tunjuk butang lock
+                    lockBtn.style.display = 'flex'; 
                     
-                    localStorage.setItem('mysystem_profile_image', base64Data);
-                    
-                    // Reset imej ke kedudukan asal dan Pastikan Status Buka Kunci
                     scale = 1; pointX = 0; pointY = 0;
                     isLocked = false; 
-                    lockBtn.innerHTML = '<i class="fa fa-unlock"></i>';
-                    container.style.cursor = 'grab';
+                    updateLockUI();
                     setTransform();
+                    saveImageState(); // Simpan gambar baru
                 }
                 reader.readAsDataURL(file);
             }
@@ -468,9 +482,8 @@
             previewImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
         }
 
-        // FUNGSI PAN/DRAG (Hanya berfungsi jika TIDAK DIKUNCI)
+        // FUNGSI PAN/DRAG
         container.addEventListener('mousedown', function(e) {
-            // Abaikan jika tiada gambar, gambar dikunci, atau klik pada butang action
             if(previewImg.style.display === 'none' || isLocked || e.target.closest('.img-action-btn') || e.target === uploadText) return;
             e.preventDefault();
             isPanning = true;
@@ -490,6 +503,7 @@
             if (isPanning) {
                 isPanning = false;
                 if(!isLocked) container.style.cursor = 'grab';
+                saveImageState(); // Simpan posisi baru lepas drag
             }
         });
 
@@ -500,9 +514,9 @@
             }
         });
 
-        // FUNGSI ZOOM (Hanya berfungsi jika TIDAK DIKUNCI)
+        // FUNGSI ZOOM
         container.addEventListener('wheel', function(e) {
-            if(previewImg.style.display === 'none' || isLocked) return; // Terbatal jika dikunci
+            if(previewImg.style.display === 'none' || isLocked) return; 
             e.preventDefault();
             const delta = Math.sign(e.deltaY) * -1;
             const zoomSpeed = 0.1;
@@ -511,6 +525,10 @@
             if (newScale > 5) newScale = 5;     
             scale = newScale;
             setTransform();
+            
+            // Simpan zoom baru selepas scroll berhenti sekejap (mengelakkan lag pada localstorage)
+            clearTimeout(window.zoomTimer);
+            window.zoomTimer = setTimeout(saveImageState, 300);
         }, { passive: false }); 
 
         // --- 2. FUNGSI LOG MASUK ---
