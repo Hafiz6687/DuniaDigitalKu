@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MySystem - Log Masuk</title>
+    <title>MySystem - Log Masuk & Papan Pemuka</title>
     <!-- FontAwesome untuk ikon pengguna dan kunci -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,67 +22,81 @@
             min-height: 100vh;
         }
 
+        /* -------------------------------------
+           BAHAGIAN LOG MASUK (Kekal Seperti Arahan)
+           ------------------------------------- */
         .login-container {
             width: 100%;
-            max-width: 1062px; /* Dibesarkan 25% dari 850px */
-            padding: 25px; /* Dibesarkan 25% dari 20px */
+            max-width: 1062px;
+            padding: 25px;
+            display: flex; /* Dipaparkan pada awalnya */
+            justify-content: center;
         }
 
         .login-card {
             display: flex;
+            width: 100%;
             background: #ffffff;
-            border-radius: 19px; /* Dibesarkan 25% dari 15px */
+            border-radius: 19px;
             overflow: hidden;
             box-shadow: 0 15px 30px rgba(0,0,0,0.4);
         }
 
         /* Bahagian Kiri (Biru 75%) */
         .left-panel {
-            background: #2581f7; /* Warna biru */
+            background: #2581f7;
             color: white;
-            flex: 3; /* Menetapkan nisbah ruang 75% */
+            flex: 3;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 62px 25px; /* Dibesarkan 25% */
+            padding: 62px 25px;
             text-align: center;
         }
 
         .image-placeholder {
-            width: 337px; /* Dibesarkan 50% dari 225px */
-            height: 337px; /* Dibesarkan 50% dari 225px */
+            width: 337px;
+            height: 337px;
             background-color: rgba(255, 255, 255, 0.2);
             border: 2px dashed #ffffff;
             border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 31px; /* Dibesarkan 25% */
+            margin-bottom: 31px;
             padding: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            overflow: hidden; /* Pastikan gambar tidak terkeluar dari sempadan */
+        }
+
+        .image-placeholder:hover {
+            background-color: rgba(255, 255, 255, 0.3);
         }
 
         .image-placeholder span {
-            font-size: 16px; /* Dibesarkan 25% */
+            font-size: 16px;
             color: #f1f1f1;
+            text-align: center;
         }
 
         .left-panel h1 {
-            font-size: 4.375rem; /* Dibesarkan 25% dari 3.5rem */
+            font-size: 4.375rem;
             margin-bottom: 6px;
             font-weight: 700;
         }
 
         .left-panel p {
-            font-size: 1.375rem; /* Dibesarkan 25% dari 1.1rem */
+            font-size: 1.375rem;
             letter-spacing: 1px;
         }
 
         /* Bahagian Kanan (Kelabu 25%) */
         .right-panel {
-            flex: 1; /* Menetapkan nisbah ruang 25% */
-            background: #f2f5f8; /* Warna latar kelabu */
-            padding: 75px 62px; /* Dibesarkan 25% */
+            flex: 1;
+            background: #f2f5f8;
+            padding: 75px 62px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -90,38 +104,38 @@
 
         .input-group {
             display: flex;
-            margin-bottom: 25px; /* Dibesarkan 25% */
+            margin-bottom: 25px;
             border-radius: 6px;
             overflow: hidden;
-            background: #ffffff; /* Ditukar kepada putih agar kontras dengan latar kelabu */
+            background: #ffffff;
         }
 
         .input-group .icon {
-            background: #86d4f4; /* Warna ikon biru cair */
+            background: #86d4f4;
             color: white;
-            padding: 19px; /* Dibesarkan 25% */
+            padding: 19px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-width: 69px; /* Dibesarkan 25% */
-            font-size: 1.5rem; /* Dibesarkan 25% */
+            min-width: 69px;
+            font-size: 1.5rem;
         }
 
         .input-group input {
             border: none;
-            padding: 19px; /* Dibesarkan 25% */
+            padding: 19px;
             flex: 1;
             outline: none;
-            font-size: 20px; /* Dibesarkan 25% */
+            font-size: 20px;
             background: transparent;
         }
 
         .links {
             display: flex;
             justify-content: space-between;
-            flex-wrap: wrap; /* Menambah fungsi wrap agar teks tidak terpotong dalam ruang 25% */
-            font-size: 16px; /* Dibesarkan 25% */
-            margin-bottom: 37px; /* Dibesarkan 25% */
+            flex-wrap: wrap;
+            font-size: 16px;
+            margin-bottom: 37px;
             color: #555;
         }
 
@@ -141,12 +155,12 @@
 
         .login-btn {
             width: 100%;
-            padding: 19px; /* Dibesarkan 25% */
-            background-color: #63d1ec; /* Biru cair butang */
+            padding: 19px;
+            background-color: #63d1ec;
             color: white;
             border: none;
             border-radius: 6px;
-            font-size: 20px; /* Dibesarkan 25% */
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.3s;
@@ -154,6 +168,86 @@
 
         .login-btn:hover {
             background-color: #4ab8d3;
+        }
+
+
+        /* -------------------------------------
+           BAHAGIAN PAPAN PEMUKA (DASHBOARD)
+           ------------------------------------- */
+        .dashboard-container {
+            display: none; /* Disembunyikan pada awalnya */
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 19px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2581f7;
+        }
+
+        .dashboard-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* Grid 4 kolom x 2 baris */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .dash-btn {
+            background-color: #2581f7;
+            color: white;
+            padding: 30px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 5px 15px rgba(37, 129, 247, 0.2);
+        }
+
+        .dash-btn i {
+            font-size: 2.5rem;
+        }
+
+        .dash-btn:hover {
+            background-color: #1a63c6;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(37, 129, 247, 0.4);
+        }
+
+        .logout-btn {
+            padding: 15px 40px;
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #ff253a;
         }
 
         /* Responsif untuk skrin telefon */
@@ -164,35 +258,52 @@
             .right-panel {
                 padding: 50px 37px;
             }
+            .button-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 kolom pada skrin kecil */
+            }
+        }
+
+        @media (max-width: 600px) {
+            .button-grid {
+                grid-template-columns: repeat(1, 1fr); /* 1 kolom pada telefon */
+            }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
+
+    <!-- ==========================================
+         PAPARAN 1: LOG MASUK
+         ========================================== -->
+    <div class="login-container" id="login-section">
         <div class="login-card">
             
             <!-- Paparan Kiri -->
             <div class="left-panel">
-                <div class="image-placeholder">
-                    <!-- Tukar 'src' di bawah apabila gambar sebenar sudah ada -->
-                    <!-- <img src="gambar-anda.png" alt="Logo" style="max-width: 100%;"> -->
-                    <span>Ruangan Gambar<br>(Upload Kemudian)</span>
-                </div>
+                <!-- Label digunakan untuk trigger input file -->
+                <label for="upload-image" class="image-placeholder" id="image-preview-container">
+                    <span id="upload-text">Klik Sini Untuk<br>Upload Gambar</span>
+                </label>
+                <!-- Input jenis file disorokkan (hidden) -->
+                <input type="file" id="upload-image" accept="image/*" style="display: none;">
+                
                 <h1>MySystem</h1>
                 <p>(Dunia Digital Ku)</p>
             </div>
 
             <!-- Paparan Kanan -->
             <div class="right-panel">
-                <form action="#" method="GET">
+                <form id="login-form">
                     <div class="input-group">
                         <span class="icon"><i class="fa-regular fa-user"></i></span>
-                        <input type="text" placeholder="ID Pengguna" required>
+                        <!-- ID disuntik di sini -->
+                        <input type="text" id="userid" placeholder="ID Pengguna" required>
                     </div>
                     
                     <div class="input-group">
                         <span class="icon" style="background: #63d1ec;"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" placeholder="Kata Laluan" required>
+                        <!-- ID disuntik di sini -->
+                        <input type="password" id="password" placeholder="Kata Laluan" required>
                     </div>
 
                     <div class="links">
@@ -206,5 +317,92 @@
 
         </div>
     </div>
+
+
+    <!-- ==========================================
+         PAPARAN 2: PAPAN PEMUKA (DASHBOARD 8 BUTTONS)
+         ========================================== -->
+    <div class="dashboard-container" id="dashboard-section">
+        <div class="dashboard-header">
+            <h2>Selamat Datang ke MySystem</h2>
+            <p>(Dunia Digital Ku) - Menu Utama</p>
+        </div>
+
+        <div class="button-grid">
+            <!-- Row 1 -->
+            <button class="dash-btn"><i class="fa-solid fa-users"></i> Profil Pengguna</button>
+            <button class="dash-btn"><i class="fa-solid fa-file-invoice"></i> Dokumen</button>
+            <button class="dash-btn"><i class="fa-solid fa-chart-line"></i> Laporan</button>
+            <button class="dash-btn"><i class="fa-solid fa-envelope"></i> Mesej</button>
+            
+            <!-- Row 2 -->
+            <button class="dash-btn"><i class="fa-solid fa-calendar-check"></i> Jadual</button>
+            <button class="dash-btn"><i class="fa-solid fa-briefcase"></i> Pengurusan</button>
+            <button class="dash-btn"><i class="fa-solid fa-gear"></i> Tetapan</button>
+            <button class="dash-btn"><i class="fa-solid fa-circle-question"></i> Bantuan</button>
+        </div>
+
+        <button class="logout-btn" id="logout-btn">Log Keluar</button>
+    </div>
+
+
+    <!-- ==========================================
+         JAVASCRIPT (Fungsi Upload & Log Masuk)
+         ========================================== -->
+    <script>
+        // --- 1. FUNGSI UPLOAD GAMBAR ---
+        const imageUpload = document.getElementById('upload-image');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const uploadText = document.getElementById('upload-text');
+
+        imageUpload.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Masukkan gambar sebagai background, dan hilangkan teks
+                    imagePreviewContainer.style.backgroundImage = `url('${e.target.result}')`;
+                    imagePreviewContainer.style.backgroundSize = 'cover';
+                    imagePreviewContainer.style.backgroundPosition = 'center';
+                    uploadText.style.display = 'none'; // Sembunyikan teks
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- 2. FUNGSI LOG MASUK ---
+        const loginForm = document.getElementById('login-form');
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+
+        loginForm.addEventListener('submit', function(event) {
+            // Halang halaman dari 'refresh'
+            event.preventDefault(); 
+
+            const userIdInput = document.getElementById('userid').value;
+            const passwordInput = document.getElementById('password').value;
+
+            // Semak ID & Password
+            if (userIdInput === 'admin01' && passwordInput === 'Sistem@2026') {
+                // Berjaya Log Masuk: Sorok login, Papar dashboard
+                loginSection.style.display = 'none';
+                dashboardSection.style.display = 'flex';
+                // Kosongkan form lepas log masuk
+                loginForm.reset();
+            } else {
+                // Gagal Log Masuk
+                alert('Ralat: ID Pengguna atau Kata Laluan tidak sah. Sila cuba lagi.');
+            }
+        });
+
+        // --- 3. FUNGSI LOG KELUAR ---
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', function() {
+            // Berjaya Log Keluar: Sorok dashboard, Papar login
+            dashboardSection.style.display = 'none';
+            loginSection.style.display = 'flex';
+        });
+    </script>
+
 </body>
 </html>
