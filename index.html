@@ -56,9 +56,10 @@
             text-align: center;
         }
 
+        /* Ukuran gambar diubah kepada 500px x 500px */
         .image-placeholder {
-            width: 337px;
-            height: 337px;
+            width: 500px;
+            height: 500px;
             position: relative;
             overflow: hidden;
             border-radius: 20px; 
@@ -80,8 +81,8 @@
             font-size: 16px;
             color: #f1f1f1;
             text-align: center;
-            cursor: pointer; /* Membenarkan teks diklik */
-            z-index: 5; /* Pastikan teks berada di atas */
+            cursor: pointer; 
+            z-index: 5; 
         }
 
         #preview-img {
@@ -93,7 +94,7 @@
             object-fit: cover;
             transform-origin: center center;
             pointer-events: none; 
-            display: none; /* Disembunyikan pada asalnya */
+            display: none; 
         }
 
         .reupload-btn {
@@ -378,10 +379,8 @@
         const uploadText = document.getElementById('upload-text');
         const reuploadBtn = document.getElementById('reupload-btn');
 
-        // Pembolehubah untuk fungsi Drag & Zoom
         let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0, isPanning = false;
 
-        // SEMAK GAMBAR DI LOCALSTORAGE SEMASA PAGE DIBUKA
         window.addEventListener('DOMContentLoaded', () => {
             const savedImage = localStorage.getItem('mysystem_profile_image');
             if (savedImage) {
@@ -393,18 +392,15 @@
             }
         });
 
-        // Klik pada teks untuk upload pertama kali
         uploadText.addEventListener('click', () => {
             fileInput.click();
         });
 
-        // Butang kecil tukar gambar
         reuploadBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             fileInput.click();
         });
 
-        // Apabila gambar dipilih
         fileInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
@@ -416,10 +412,8 @@
                     uploadText.style.display = 'none';
                     reuploadBtn.style.display = 'flex'; 
                     
-                    // SIMPAN KE LOCALSTORAGE (Pastikan gambar kekal)
                     localStorage.setItem('mysystem_profile_image', base64Data);
                     
-                    // Reset skala dan posisi
                     scale = 1; pointX = 0; pointY = 0;
                     setTransform();
                 }
@@ -431,7 +425,6 @@
             previewImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
         }
 
-        // FUNGSI PAN (DRAG)
         container.addEventListener('mousedown', function(e) {
             if(previewImg.style.display === 'none' || e.target === reuploadBtn || e.target === uploadText) return;
             e.preventDefault();
@@ -455,7 +448,6 @@
             if (isPanning) isPanning = false;
         });
 
-        // FUNGSI ZOOM (SCROLL WHEEL)
         container.addEventListener('wheel', function(e) {
             if(previewImg.style.display === 'none') return;
             e.preventDefault();
