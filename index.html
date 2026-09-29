@@ -6,14 +6,14 @@
     <title>MySystem - Log Masuk & Papan Pemuka</title>
     <!-- FontAwesome untuk ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts (Poppins) untuk Gaya Moden & Profesional -->
+    <!-- Google Fonts (Poppins) -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Poppins', sans-serif; /* Tukar ke font moden */
+            font-family: 'Poppins', sans-serif;
         }
 
         body {
@@ -44,7 +44,6 @@
             box-shadow: 0 15px 30px rgba(0,0,0,0.4);
         }
 
-        /* Bahagian Kiri (Biru 75%) */
         .left-panel {
             background: #2581f7;
             color: white;
@@ -57,14 +56,12 @@
             text-align: center;
         }
 
-        /* ----- FEATURE GAMBAR MODEN & PROFESIONAL ----- */
         .image-placeholder {
             width: 337px;
             height: 337px;
             position: relative;
             overflow: hidden;
-            border-radius: 20px; /* Bucu lebih bulat */
-            /* Gaya Glassmorphism Moden menggantikan dashed border */
+            border-radius: 20px; 
             background: rgba(255, 255, 255, 0.1);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); 
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -72,7 +69,7 @@
             justify-content: center;
             align-items: center;
             margin-bottom: 31px;
-            cursor: grab; /* Kursor drag */
+            cursor: grab;
         }
 
         .image-placeholder:active {
@@ -83,10 +80,10 @@
             font-size: 16px;
             color: #f1f1f1;
             text-align: center;
-            pointer-events: none; /* Supaya teks tidak kacau drag */
+            cursor: pointer; /* Membenarkan teks diklik */
+            z-index: 5; /* Pastikan teks berada di atas */
         }
 
-        /* Imej yang boleh di zoom dan drag */
         #preview-img {
             position: absolute;
             top: 0;
@@ -95,10 +92,10 @@
             height: 100%;
             object-fit: cover;
             transform-origin: center center;
-            pointer-events: none; /* Elak isu drag pada browser */
+            pointer-events: none; 
+            display: none; /* Disembunyikan pada asalnya */
         }
 
-        /* Butang kecil untuk Tukar Gambar */
         .reupload-btn {
             position: absolute;
             top: 15px;
@@ -111,7 +108,7 @@
             height: 35px;
             font-size: 14px;
             cursor: pointer;
-            display: none; /* Sembunyi pada mulanya */
+            display: none; 
             justify-content: center;
             align-items: center;
             transition: 0.3s;
@@ -123,13 +120,12 @@
             color: black;
         }
 
-        /* ----- GAYA TIPOGRAFI MYSYSTEM MODEN ----- */
         .left-panel h1 {
             font-size: 4.5rem;
             margin-bottom: 6px;
             font-weight: 700;
             letter-spacing: 2px;
-            text-shadow: 2px 4px 10px rgba(0,0,0,0.25); /* Efek timbul yang kemas */
+            text-shadow: 2px 4px 10px rgba(0,0,0,0.25); 
         }
 
         .left-panel p {
@@ -139,7 +135,6 @@
             opacity: 0.9;
         }
 
-        /* Bahagian Kanan (Kelabu 25%) */
         .right-panel {
             flex: 1;
             background: #f2f5f8;
@@ -155,7 +150,7 @@
             border-radius: 6px;
             overflow: hidden;
             background: #ffffff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02); /* Bayang lembut input */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); 
         }
 
         .input-group .icon {
@@ -376,7 +371,7 @@
     </div>
 
     <script>
-        // --- 1. FUNGSI GAMBAR (UPLOAD, PAN/DRAG, ZOOM) ---
+        // --- 1. FUNGSI GAMBAR (UPLOAD, LOCALSTORAGE, PAN/DRAG, ZOOM) ---
         const container = document.getElementById('image-preview-container');
         const fileInput = document.getElementById('upload-image');
         const previewImg = document.getElementById('preview-img');
@@ -384,17 +379,26 @@
         const reuploadBtn = document.getElementById('reupload-btn');
 
         // Pembolehubah untuk fungsi Drag & Zoom
-        let scale = 1;
-        let pointX = 0, pointY = 0;
-        let startX = 0, startY = 0;
-        let isPanning = false;
+        let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0, isPanning = false;
+
+        // SEMAK GAMBAR DI LOCALSTORAGE SEMASA PAGE DIBUKA
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedImage = localStorage.getItem('mysystem_profile_image');
+            if (savedImage) {
+                previewImg.src = savedImage;
+                previewImg.style.display = 'block';
+                uploadText.style.display = 'none';
+                reuploadBtn.style.display = 'flex';
+                setTransform();
+            }
+        });
 
         // Klik pada teks untuk upload pertama kali
         uploadText.addEventListener('click', () => {
             fileInput.click();
         });
 
-        // Butang kecil tukar gambar (Elak trigger pan)
+        // Butang kecil tukar gambar
         reuploadBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             fileInput.click();
@@ -406,10 +410,14 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    previewImg.src = e.target.result;
+                    const base64Data = e.target.result;
+                    previewImg.src = base64Data;
                     previewImg.style.display = 'block';
                     uploadText.style.display = 'none';
-                    reuploadBtn.style.display = 'flex'; // Tunjuk butang kamera
+                    reuploadBtn.style.display = 'flex'; 
+                    
+                    // SIMPAN KE LOCALSTORAGE (Pastikan gambar kekal)
+                    localStorage.setItem('mysystem_profile_image', base64Data);
                     
                     // Reset skala dan posisi
                     scale = 1; pointX = 0; pointY = 0;
@@ -425,7 +433,7 @@
 
         // FUNGSI PAN (DRAG)
         container.addEventListener('mousedown', function(e) {
-            if(previewImg.style.display === 'none') return;
+            if(previewImg.style.display === 'none' || e.target === reuploadBtn || e.target === uploadText) return;
             e.preventDefault();
             isPanning = true;
             startX = e.clientX - pointX;
@@ -443,24 +451,22 @@
             if (isPanning) isPanning = false;
         });
 
+        window.addEventListener('mouseleave', function() {
+            if (isPanning) isPanning = false;
+        });
+
         // FUNGSI ZOOM (SCROLL WHEEL)
         container.addEventListener('wheel', function(e) {
             if(previewImg.style.display === 'none') return;
             e.preventDefault();
-            
-            // Tentukan arah scroll (+1 untuk zoom out, -1 untuk zoom in)
             const delta = Math.sign(e.deltaY) * -1;
             const zoomSpeed = 0.1;
-            
             let newScale = scale + (delta * zoomSpeed);
-            
-            // Hadkan tahap zoom (maksimum dan minimum)
-            if (newScale < 0.5) newScale = 0.5; // Paling kecil
-            if (newScale > 5) newScale = 5;     // Paling besar
-            
+            if (newScale < 0.5) newScale = 0.5; 
+            if (newScale > 5) newScale = 5;     
             scale = newScale;
             setTransform();
-        }, { passive: false }); // Membenarkan penggunaan preventDefault untuk hentikan scroll halaman
+        }, { passive: false }); 
 
 
         // --- 2. FUNGSI LOG MASUK ---
