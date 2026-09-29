@@ -36,11 +36,11 @@
             box-shadow: 0 15px 30px rgba(0,0,0,0.4);
         }
 
-        /* Bahagian Kiri (Biru) */
+        /* Bahagian Kiri (Biru 75%) */
         .left-panel {
             background: #2581f7; /* Warna biru */
             color: white;
-            flex: 1;
+            flex: 3; /* Menetapkan nisbah ruang 75% */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -50,8 +50,8 @@
         }
 
         .image-placeholder {
-            width: 225px; /* Dibesarkan 50% dari 150px */
-            height: 225px; /* Dibesarkan 50% dari 150px */
+            width: 337px; /* Dibesarkan 50% dari 225px */
+            height: 337px; /* Dibesarkan 50% dari 225px */
             background-color: rgba(255, 255, 255, 0.2);
             border: 2px dashed #ffffff;
             border-radius: 12px;
@@ -71,7 +71,6 @@
             font-size: 4.375rem; /* Dibesarkan 25% dari 3.5rem */
             margin-bottom: 6px;
             font-weight: 700;
-            /* text-transform: uppercase; - Dibuang untuk membenarkan ejaan MySystem */
         }
 
         .left-panel p {
@@ -79,9 +78,10 @@
             letter-spacing: 1px;
         }
 
-        /* Bahagian Kanan (Putih) */
+        /* Bahagian Kanan (Kelabu 25%) */
         .right-panel {
-            flex: 1;
+            flex: 1; /* Menetapkan nisbah ruang 25% */
+            background: #f2f5f8; /* Warna latar kelabu */
             padding: 75px 62px; /* Dibesarkan 25% */
             display: flex;
             flex-direction: column;
@@ -93,7 +93,7 @@
             margin-bottom: 25px; /* Dibesarkan 25% */
             border-radius: 6px;
             overflow: hidden;
-            background: #f0f4f8;
+            background: #ffffff; /* Ditukar kepada putih agar kontras dengan latar kelabu */
         }
 
         .input-group .icon {
@@ -119,6 +119,7 @@
         .links {
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap; /* Menambah fungsi wrap agar teks tidak terpotong dalam ruang 25% */
             font-size: 16px; /* Dibesarkan 25% */
             margin-bottom: 37px; /* Dibesarkan 25% */
             color: #555;
@@ -130,6 +131,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            margin-bottom: 5px;
         }
 
         .links a:hover {
@@ -154,7 +156,7 @@
             background-color: #4ab8d3;
         }
 
-        /* Responsif untuk skrin telefon (Breakpoint juga dibesarkan sikit 25%) */
+        /* Responsif untuk skrin telefon */
         @media (max-width: 960px) {
             .login-card {
                 flex-direction: column;
