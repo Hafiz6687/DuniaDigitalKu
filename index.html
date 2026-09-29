@@ -89,16 +89,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Mengekalkan nisbah asal gambar tanpa potong */
+            object-fit: contain; 
             transform-origin: center center;
             pointer-events: none; 
             display: none; 
         }
 
-        /* GAYA BUTANG ACTION (KAMERA & LOCK) */
+        /* GAYA BUTANG ACTION (KAMERA & LOCK) - Diubah ke Bawah Kanan */
         .img-action-btn {
             position: absolute;
-            top: 15px;
+            bottom: 15px; /* Ditukar dari top kepada bottom */
             background: rgba(0, 0, 0, 0.6);
             color: white;
             border: none;
@@ -107,15 +107,14 @@
             height: 35px;
             font-size: 14px;
             cursor: pointer;
-            display: none; /* Muncul lepas upload */
+            display: none; 
             justify-content: center;
             align-items: center;
             transition: all 0.3s;
             z-index: 10;
-            opacity: 0; /* Ghaib secara default */
+            opacity: 0; 
         }
 
-        /* BUTANG MUNCUL BILA CURSOR SENTUH GAMBAR */
         .image-placeholder:hover .img-action-btn {
             opacity: 1;
         }
@@ -126,7 +125,7 @@
         }
 
         #reupload-btn {
-            right: 15px;
+            right: 15px; /* Kedudukan dari kanan */
         }
 
         #lock-btn {
