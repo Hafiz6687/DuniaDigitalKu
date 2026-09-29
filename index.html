@@ -68,6 +68,7 @@
             align-items: center;
             margin-bottom: 31px;
             cursor: grab;
+            transition: all 0.3s ease;
         }
 
         .image-placeholder:active {
@@ -82,23 +83,22 @@
             z-index: 5; 
         }
 
-        /* KUNCI UTAMA: Papar saiz dan nisbah original gambar tanpa potong */
         #preview-img {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Tukar dari cover ke contain */
+            object-fit: contain; /* Mengekalkan nisbah asal gambar tanpa potong */
             transform-origin: center center;
             pointer-events: none; 
             display: none; 
         }
 
-        .reupload-btn {
+        /* GAYA BUTANG ACTION (KAMERA & LOCK) */
+        .img-action-btn {
             position: absolute;
             top: 15px;
-            right: 15px;
             background: rgba(0, 0, 0, 0.6);
             color: white;
             border: none;
@@ -107,16 +107,30 @@
             height: 35px;
             font-size: 14px;
             cursor: pointer;
-            display: none; 
+            display: none; /* Muncul lepas upload */
             justify-content: center;
             align-items: center;
-            transition: 0.3s;
+            transition: all 0.3s;
             z-index: 10;
+            opacity: 0; /* Ghaib secara default */
+        }
+
+        /* BUTANG MUNCUL BILA CURSOR SENTUH GAMBAR */
+        .image-placeholder:hover .img-action-btn {
+            opacity: 1;
         }
         
-        .reupload-btn:hover {
+        .img-action-btn:hover {
             background: rgba(255, 255, 255, 0.9);
             color: black;
+        }
+
+        #reupload-btn {
+            right: 15px;
+        }
+
+        #lock-btn {
+            right: 55px; /* Kedudukan di sebelah butang kamera */
         }
 
         .left-panel h1 {
@@ -316,7 +330,9 @@
                 <div class="image-placeholder" id="image-preview-container">
                     <span id="upload-text">Klik Sini Untuk<br>Upload Gambar</span>
                     <img id="preview-img" src="" alt="">
-                    <button class="reupload-btn" id="reupload-btn" title="Tukar Gambar"><i class="fa fa-camera"></i></button>
+                    <!-- Butang Lock & Kamera disatukan dalam kelas 'img-action-btn' -->
+                    <button class="img-action-btn" id="lock-btn" title="Kunci Gambar"><i class="fa fa-unlock"></i></button>
+                    <button class="img-action-btn" id="reupload-btn" title="Tukar Gambar"><i class="fa fa-camera"></i></button>
                     <input type="file" id="upload-image" accept="image/*" style="display: none;">
                 </div>
                 <h1>MySystem</h1>
@@ -369,15 +385,19 @@
     </div>
 
     <script>
-        // --- 1. FUNGSI GAMBAR ---
+        // --- 1. FUNGSI GAMBAR (UPLOAD, LOCK, DRAG, ZOOM) ---
         const container = document.getElementById('image-preview-container');
         const fileInput = document.getElementById('upload-image');
         const previewImg = document.getElementById('preview-img');
         const uploadText = document.getElementById('upload-text');
         const reuploadBtn = document.getElementById('reupload-btn');
+        const lockBtn = document.getElementById('lock-btn');
 
-        let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0, isPanning = false;
+        let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0;
+        let isPanning = false;
+        let isLocked = false; // Status kunci lalai (Unlock)
 
+        // MUAT GAMBAR DARI LOCALSTORAGE
         window.addEventListener('DOMContentLoaded', () => {
             const savedImage = localStorage.getItem('mysystem_profile_image');
             if (savedImage) {
@@ -385,7 +405,28 @@
                 previewImg.style.display = 'block';
                 uploadText.style.display = 'none';
                 reuploadBtn.style.display = 'flex';
+                lockBtn.style.display = 'flex';
                 setTransform();
+            }
+        });
+
+        // FUNGSI KUNCI/BUKA KUNCI (LOCK / UNLOCK)
+        lockBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Elak trigger drag
+            isLocked = !isLocked;
+            
+            if (isLocked) {
+                // Mod Kunci: Ikon mangga tertutup, hilangkan butang kamera, matikan kursor grab
+                lockBtn.innerHTML = '<i class="fa fa-lock"></i>';
+                lockBtn.title = "Buka Kunci";
+                reuploadBtn.style.display = 'none';
+                container.style.cursor = 'default';
+            } else {
+                // Mod Buka Kunci: Ikon mangga terbuka, tunjukkan kamera, hidupkan kursor grab
+                lockBtn.innerHTML = '<i class="fa fa-unlock"></i>';
+                lockBtn.title = "Kunci Gambar";
+                reuploadBtn.style.display = 'flex';
+                container.style.cursor = 'grab';
             }
         });
 
@@ -395,7 +436,7 @@
 
         reuploadBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            fileInput.click();
+            if(!isLocked) fileInput.click();
         });
 
         fileInput.addEventListener('change', function(event) {
@@ -408,10 +449,15 @@
                     previewImg.style.display = 'block';
                     uploadText.style.display = 'none';
                     reuploadBtn.style.display = 'flex'; 
+                    lockBtn.style.display = 'flex'; // Tunjuk butang lock
                     
                     localStorage.setItem('mysystem_profile_image', base64Data);
                     
+                    // Reset imej ke kedudukan asal dan Pastikan Status Buka Kunci
                     scale = 1; pointX = 0; pointY = 0;
+                    isLocked = false; 
+                    lockBtn.innerHTML = '<i class="fa fa-unlock"></i>';
+                    container.style.cursor = 'grab';
                     setTransform();
                 }
                 reader.readAsDataURL(file);
@@ -422,31 +468,41 @@
             previewImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
         }
 
+        // FUNGSI PAN/DRAG (Hanya berfungsi jika TIDAK DIKUNCI)
         container.addEventListener('mousedown', function(e) {
-            if(previewImg.style.display === 'none' || e.target === reuploadBtn || e.target === uploadText) return;
+            // Abaikan jika tiada gambar, gambar dikunci, atau klik pada butang action
+            if(previewImg.style.display === 'none' || isLocked || e.target.closest('.img-action-btn') || e.target === uploadText) return;
             e.preventDefault();
             isPanning = true;
+            container.style.cursor = 'grabbing';
             startX = e.clientX - pointX;
             startY = e.clientY - pointY;
         });
 
         window.addEventListener('mousemove', function(e) {
-            if (!isPanning) return;
+            if (!isPanning || isLocked) return;
             pointX = e.clientX - startX;
             pointY = e.clientY - startY;
             setTransform();
         });
 
         window.addEventListener('mouseup', function() {
-            if (isPanning) isPanning = false;
+            if (isPanning) {
+                isPanning = false;
+                if(!isLocked) container.style.cursor = 'grab';
+            }
         });
 
         window.addEventListener('mouseleave', function() {
-            if (isPanning) isPanning = false;
+            if (isPanning) {
+                isPanning = false;
+                if(!isLocked) container.style.cursor = 'grab';
+            }
         });
 
+        // FUNGSI ZOOM (Hanya berfungsi jika TIDAK DIKUNCI)
         container.addEventListener('wheel', function(e) {
-            if(previewImg.style.display === 'none') return;
+            if(previewImg.style.display === 'none' || isLocked) return; // Terbatal jika dikunci
             e.preventDefault();
             const delta = Math.sign(e.deltaY) * -1;
             const zoomSpeed = 0.1;
