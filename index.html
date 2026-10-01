@@ -95,10 +95,10 @@
             display: none; 
         }
 
-        /* GAYA BUTANG ACTION (KAMERA & LOCK) - Diubah ke Bawah Kanan */
+        /* GAYA BUTANG ACTION (KAMERA & LOCK) */
         .img-action-btn {
             position: absolute;
-            bottom: 15px; /* Ditukar dari top kepada bottom */
+            bottom: 15px; 
             background: rgba(0, 0, 0, 0.6);
             color: white;
             border: none;
@@ -125,11 +125,11 @@
         }
 
         #reupload-btn {
-            right: 15px; /* Kedudukan dari kanan */
+            right: 15px; 
         }
 
         #lock-btn {
-            right: 55px; /* Kedudukan di sebelah butang kamera */
+            right: 55px; 
         }
 
         .left-panel h1 {
@@ -383,8 +383,27 @@
         <button class="logout-btn" id="logout-btn">Log Keluar</button>
     </div>
 
+    <!-- Masukkan Firebase Library -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
     <script>
-        // --- 1. FUNGSI GAMBAR DENGAN LOCALSTORAGE & AUTO-COMPRESS ---
+        // --- KONFIGURASI FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHg2YjFppm3shVrODpSG-ezR4sjOQqwvA",
+            authDomain: "duniadigitalku.firebaseapp.com",
+            databaseURL: "https://duniadigitalku-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "duniadigitalku",
+            storageBucket: "duniadigitalku.firebasestorage.app",
+            messagingSenderId: "201706892024",
+            appId: "1:201706892024:web:27d67c72fa689ee291e90d"
+        };
+        
+        // Aktifkan Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- 1. FUNGSI GAMBAR DENGAN FIREBASE & AUTO-COMPRESS ---
         const container = document.getElementById('image-preview-container');
         const fileInput = document.getElementById('upload-image');
         const previewImg = document.getElementById('preview-img');
@@ -396,11 +415,10 @@
         let isPanning = false;
         let isLocked = false; 
 
-        // Fungsi Simpan State ke Pangkalan Data (Server)
-        async function saveImageState() {
+        // Fungsi Simpan State ke Firebase Realtime Database
+        function saveImageState() {
             if (previewImg.src && previewImg.src !== window.location.href) {
                 const imgData = {
-                    userid: 'admin01', // Mengikat gambar ini kepada ID pengguna spesifik
                     base64: previewImg.src,
                     scale: scale,
                     pointX: pointX,
@@ -408,50 +426,38 @@
                     isLocked: isLocked
                 };
                 
-                try {
-                    // Hantar data ke fail PHP backend
-                    await fetch('simpan-profil.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(imgData)
-                    });
-                    console.log("Gambar telah berjaya disegerakkan ke pangkalan data.");
-                } catch (error) {
-                    console.error("Ralat: Tidak dapat menyambung ke pelayan (server).", error);
-                }
+                // Simpan ke Firebase di bawah rekod pengguna 'admin01'
+                db.ref('profil_pengguna/admin01').set(imgData)
+                  .then(() => console.log("Gambar telah berjaya disegerakkan ke Firebase."))
+                  .catch((error) => console.error("Ralat Firebase:", error));
             }
         }
 
-        // MUAT GAMBAR DARI PANGKALAN DATA (SERVER)
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Tarik data dari fail PHP berdasarkan ID Pengguna
-                const response = await fetch('dapatkan-profil.php?userid=admin01');
-                
-                if (response.ok) {
-                    const imgData = await response.json();
+        // MUAT GAMBAR DARI FIREBASE BILA SISTEM DIBUKA
+        window.addEventListener('DOMContentLoaded', () => {
+            db.ref('profil_pengguna/admin01').once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const imgData = snapshot.val();
                     
-                    if (imgData && imgData.base64) {
-                        previewImg.src = imgData.base64;
-                        previewImg.style.display = 'block';
-                        uploadText.style.display = 'none';
-                        reuploadBtn.style.display = 'flex';
-                        lockBtn.style.display = 'flex';
+                    previewImg.src = imgData.base64;
+                    previewImg.style.display = 'block';
+                    uploadText.style.display = 'none';
+                    reuploadBtn.style.display = 'flex';
+                    lockBtn.style.display = 'flex';
 
-                        scale = imgData.scale || 1;
-                        pointX = imgData.pointX || 0;
-                        pointY = imgData.pointY || 0;
-                        isLocked = imgData.isLocked || false;
+                    scale = imgData.scale || 1;
+                    pointX = imgData.pointX || 0;
+                    pointY = imgData.pointY || 0;
+                    isLocked = imgData.isLocked || false;
 
-                        updateLockUI();
-                        setTransform();
-                    }
+                    updateLockUI();
+                    setTransform();
+                } else {
+                    console.log("Tiada rekod gambar dijumpai dalam Firebase.");
                 }
-            } catch(e) {
-                console.log("Gagal memuat turun data profil dari server atau rekod baru.", e);
-            }
+            }).catch((error) => {
+                console.error("Gagal muat turun profil dari Firebase:", error);
+            });
         });
 
         // KAWALAN UI KUNCI (LOCK/UNLOCK)
@@ -485,13 +491,13 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     
-                    // TUKAR GAMBAR KEPADA SAIZ LEBIH KECIL (COMPRESS) SUPAYA LEPAS MASUK LOCALSTORAGE
+                    // TUKAR GAMBAR KEPADA SAIZ LEBIH KECIL (COMPRESS) SUPAYA LEPAS MASUK FIREBASE
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
                         
-                        // Hadkan kelebaran maksima gambar untuk mengelak fail melebihi 5MB
+                        // Hadkan kelebaran maksima gambar 
                         const MAX_WIDTH = 800;
                         let width = img.width;
                         let height = img.height;
