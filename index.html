@@ -396,42 +396,61 @@
         let isPanning = false;
         let isLocked = false; 
 
-        // Fungsi Simpan State ke LocalStorage
-        function saveImageState() {
+        // Fungsi Simpan State ke Pangkalan Data (Server)
+        async function saveImageState() {
             if (previewImg.src && previewImg.src !== window.location.href) {
                 const imgData = {
+                    userid: 'admin01', // Mengikat gambar ini kepada ID pengguna spesifik
                     base64: previewImg.src,
                     scale: scale,
                     pointX: pointX,
                     pointY: pointY,
                     isLocked: isLocked
                 };
-                localStorage.setItem('mysystem_profile_data', JSON.stringify(imgData));
+                
+                try {
+                    // Hantar data ke fail PHP backend
+                    await fetch('simpan-profil.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(imgData)
+                    });
+                    console.log("Gambar telah berjaya disegerakkan ke pangkalan data.");
+                } catch (error) {
+                    console.error("Ralat: Tidak dapat menyambung ke pelayan (server).", error);
+                }
             }
         }
 
-        // MUAT GAMBAR DARI LOCALSTORAGE
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedData = localStorage.getItem('mysystem_profile_data');
-            if (savedData) {
-                try {
-                    const imgData = JSON.parse(savedData);
-                    previewImg.src = imgData.base64;
-                    previewImg.style.display = 'block';
-                    uploadText.style.display = 'none';
-                    reuploadBtn.style.display = 'flex';
-                    lockBtn.style.display = 'flex';
+        // MUAT GAMBAR DARI PANGKALAN DATA (SERVER)
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Tarik data dari fail PHP berdasarkan ID Pengguna
+                const response = await fetch('dapatkan-profil.php?userid=admin01');
+                
+                if (response.ok) {
+                    const imgData = await response.json();
+                    
+                    if (imgData && imgData.base64) {
+                        previewImg.src = imgData.base64;
+                        previewImg.style.display = 'block';
+                        uploadText.style.display = 'none';
+                        reuploadBtn.style.display = 'flex';
+                        lockBtn.style.display = 'flex';
 
-                    scale = imgData.scale || 1;
-                    pointX = imgData.pointX || 0;
-                    pointY = imgData.pointY || 0;
-                    isLocked = imgData.isLocked || false;
+                        scale = imgData.scale || 1;
+                        pointX = imgData.pointX || 0;
+                        pointY = imgData.pointY || 0;
+                        isLocked = imgData.isLocked || false;
 
-                    updateLockUI();
-                    setTransform();
-                } catch(e) {
-                    console.log("Tiada data sah.");
+                        updateLockUI();
+                        setTransform();
+                    }
                 }
+            } catch(e) {
+                console.log("Gagal memuat turun data profil dari server atau rekod baru.", e);
             }
         });
 
