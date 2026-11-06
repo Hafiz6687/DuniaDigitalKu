@@ -438,7 +438,7 @@
                 if (snapshot.exists()) {
                     const imgData = snapshot.val();
                     if (imgData && imgData.base64) {
-                        previewImg.src = imgData.base64;
+                        previewImg.setAttribute('src', imgData.base64);
                         previewImg.style.display = 'block';
                         uploadText.style.display = 'none';
                         reuploadBtn.style.display = 'flex';
