@@ -22,9 +22,6 @@
             min-height: 100vh;
         }
 
-        /* -------------------------------------
-           BAHAGIAN LOG MASUK 
-           ------------------------------------- */
         .login-container {
             width: 100%;
             max-width: 1062px;
@@ -92,9 +89,9 @@
             object-fit: contain; 
             transform-origin: center center;
             pointer-events: none; 
+            display: none; 
         }
 
-        /* GAYA BUTANG ACTION (KAMERA & LOCK) */
         .img-action-btn {
             position: absolute;
             bottom: 15px; 
@@ -227,9 +224,6 @@
             transform: translateY(-2px);
         }
 
-        /* -------------------------------------
-           BAHAGIAN PAPAN PEMUKA 
-           ------------------------------------- */
         .dashboard-container {
             display: none;
             flex-direction: column;
@@ -322,13 +316,10 @@
     <!-- LOG MASUK -->
     <div class="login-container" id="login-section">
         <div class="login-card">
-            
-            <!-- Paparan Kiri -->
             <div class="left-panel">
                 <div class="image-placeholder" id="image-preview-container">
                     <span id="upload-text">Klik Sini Untuk<br>Upload Gambar</span>
                     <img id="preview-img" src="" alt="">
-                    <!-- Butang Lock & Kamera disatukan dalam kelas 'img-action-btn' -->
                     <button class="img-action-btn" id="lock-btn" title="Kunci Gambar"><i class="fa fa-unlock"></i></button>
                     <button class="img-action-btn" id="reupload-btn" title="Tukar Gambar"><i class="fa fa-camera"></i></button>
                     <input type="file" id="upload-image" accept="image/*" style="display: none;">
@@ -337,7 +328,6 @@
                 <p>(Dunia Digital Ku)</p>
             </div>
 
-            <!-- Paparan Kanan -->
             <div class="right-panel">
                 <form id="login-form">
                     <div class="input-group">
@@ -358,7 +348,6 @@
                     <button type="submit" class="login-btn">Log Masuk</button>
                 </form>
             </div>
-
         </div>
     </div>
 
@@ -398,7 +387,6 @@
             appId: "1:201706892024:web:27d67c72fa689ee291e90d"
         };
         
-        // Aktifkan Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -426,34 +414,44 @@
                 };
                 
                 db.ref('profil_pengguna/admin01').set(imgData)
+                  .then(() => console.log("Gambar telah berjaya disegerakkan ke Firebase."))
                   .catch((error) => console.error("Ralat Firebase:", error));
             }
         }
 
-       // MUAT GAMBAR DARI FIREBASE BILA SISTEM DIBUKA
+        // MUAT GAMBAR DARI FIREBASE BILA SISTEM DIBUKA (DIBAIKI DENGAN OBJEK IMAGE UNTUK MENGELAKKAN HILANG SELEPAS REFRESH)
         window.addEventListener('DOMContentLoaded', () => {
             db.ref('profil_pengguna/admin01').once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     const imgData = snapshot.val();
                     if (imgData && imgData.base64 && imgData.base64.startsWith('data:image')) {
-                        previewImg.src = imgData.base64;
-                        previewImg.style.display = 'block';
-                        uploadText.style.display = 'none';
-                        reuploadBtn.style.display = 'flex';
-                        lockBtn.style.display = 'flex';
+                        
+                        const img = new Image();
+                        img.onload = function() {
+                            previewImg.src = imgData.base64;
+                            previewImg.style.display = 'block';
+                            uploadText.style.display = 'none';
+                            reuploadBtn.style.display = 'flex';
+                            lockBtn.style.display = 'flex';
 
-                        scale = typeof imgData.scale === 'number' ? imgData.scale : 1;
-                        pointX = typeof imgData.pointX === 'number' ? imgData.pointX : 0;
-                        pointY = typeof imgData.pointY === 'number' ? imgData.pointY : 0;
-                        isLocked = !!imgData.isLocked;
+                            scale = typeof imgData.scale === 'number' ? imgData.scale : 1;
+                            pointX = typeof imgData.pointX === 'number' ? imgData.pointX : 0;
+                            pointY = typeof imgData.pointY === 'number' ? imgData.pointY : 0;
+                            isLocked = !!imgData.isLocked;
 
-                        updateLockUI();
-                        setTransform();
+                            updateLockUI();
+                            setTransform();
+                        };
+                        img.src = imgData.base64;
                     }
+                } else {
+                    console.log("Tiada rekod gambar dijumpai dalam Firebase.");
                 }
+            }).catch((error) => {
+                console.error("Gagal muat turun profil dari Firebase:", error);
             });
         });
-        // KAWALAN UI KUNCI (LOCK/UNLOCK)
+
         function updateLockUI() {
             if (isLocked) {
                 lockBtn.innerHTML = '<i class="fa fa-lock"></i>';
@@ -472,7 +470,7 @@
             e.stopPropagation(); 
             isLocked = !isLocked;
             updateLockUI();
-            saveImageState(); // Simpan status kunci
+            saveImageState();
         });
 
         uploadText.addEventListener('click', () => { fileInput.click(); });
@@ -483,15 +481,12 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    
-                    // TUKAR GAMBAR KEPADA SAIZ LEBIH KECIL (COMPRESS) SUPAYA LEPAS MASUK FIREBASE
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
                         
-                        // Hadkan kelebaran maksima gambar 
-                        const MAX_WIDTH = 800;
+                        const MAX_WIDTH = 500;
                         let width = img.width;
                         let height = img.height;
                         
@@ -504,8 +499,7 @@
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // Compress gambar kepada format JPEG kualiti 80%
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
 
                         previewImg.src = compressedBase64;
                         previewImg.style.display = 'block';
@@ -517,7 +511,7 @@
                         isLocked = false; 
                         updateLockUI();
                         setTransform();
-                        saveImageState(); // Simpan gambar yang dah di-compress
+                        saveImageState();
                     }
                     img.src = e.target.result;
                 }
@@ -529,7 +523,6 @@
             previewImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
         }
 
-        // FUNGSI PAN/DRAG
         container.addEventListener('mousedown', function(e) {
             if(previewImg.style.display === 'none' || isLocked || e.target.closest('.img-action-btn') || e.target === uploadText) return;
             e.preventDefault();
@@ -561,7 +554,6 @@
             }
         });
 
-        // FUNGSI ZOOM
         container.addEventListener('wheel', function(e) {
             if(previewImg.style.display === 'none' || isLocked) return; 
             e.preventDefault();
