@@ -416,7 +416,7 @@
 
         // Fungsi Simpan State ke Firebase Realtime Database
         function saveImageState() {
-            if (previewImg.src && previewImg.src !== window.location.href) {
+            if (previewImg.src && previewImg.src.startsWith('data:image')) {
                 const imgData = {
                     base64: previewImg.src,
                     scale: scale,
@@ -425,9 +425,7 @@
                     isLocked: isLocked
                 };
                 
-                // Simpan ke Firebase di bawah rekod pengguna 'admin01'
                 db.ref('profil_pengguna/admin01').set(imgData)
-                  .then(() => console.log("Gambar telah berjaya disegerakkan ke Firebase."))
                   .catch((error) => console.error("Ralat Firebase:", error));
             }
         }
@@ -437,8 +435,8 @@
             db.ref('profil_pengguna/admin01').once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     const imgData = snapshot.val();
-                    if (imgData && imgData.base64) {
-                        previewImg.setAttribute('src', imgData.base64);
+                    if (imgData && imgData.base64 && imgData.base64.startsWith('data:image')) {
+                        previewImg.src = imgData.base64;
                         previewImg.style.display = 'block';
                         uploadText.style.display = 'none';
                         reuploadBtn.style.display = 'flex';
@@ -452,14 +450,9 @@
                         updateLockUI();
                         setTransform();
                     }
-                } else {
-                    console.log("Tiada rekod gambar dijumpai dalam Firebase.");
                 }
-            }).catch((error) => {
-                console.error("Gagal muat turun profil dari Firebase:", error);
             });
         });
-
         // KAWALAN UI KUNCI (LOCK/UNLOCK)
         function updateLockUI() {
             if (isLocked) {
