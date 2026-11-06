@@ -89,7 +89,7 @@
             object-fit: contain; 
             transform-origin: center center;
             pointer-events: none; 
-            display: none; 
+            /* display: none dibuang di sini supaya imej tidak disembunyikan secara kekal */
         }
 
         .img-action-btn {
@@ -419,30 +419,25 @@
             }
         }
 
-        // MUAT GAMBAR DARI FIREBASE BILA SISTEM DIBUKA (DIBAIKI DENGAN OBJEK IMAGE UNTUK MENGELAKKAN HILANG SELEPAS REFRESH)
+        // MUAT GAMBAR DARI FIREBASE BILA SISTEM DIBUKA
         window.addEventListener('DOMContentLoaded', () => {
             db.ref('profil_pengguna/admin01').once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     const imgData = snapshot.val();
                     if (imgData && imgData.base64 && imgData.base64.startsWith('data:image')) {
-                        
-                        const img = new Image();
-                        img.onload = function() {
-                            previewImg.src = imgData.base64;
-                            previewImg.style.display = 'block';
-                            uploadText.style.display = 'none';
-                            reuploadBtn.style.display = 'flex';
-                            lockBtn.style.display = 'flex';
+                        previewImg.src = imgData.base64;
+                        previewImg.style.display = 'block';
+                        uploadText.style.display = 'none';
+                        reuploadBtn.style.display = 'flex';
+                        lockBtn.style.display = 'flex';
 
-                            scale = typeof imgData.scale === 'number' ? imgData.scale : 1;
-                            pointX = typeof imgData.pointX === 'number' ? imgData.pointX : 0;
-                            pointY = typeof imgData.pointY === 'number' ? imgData.pointY : 0;
-                            isLocked = !!imgData.isLocked;
+                        scale = typeof imgData.scale === 'number' ? imgData.scale : 1;
+                        pointX = typeof imgData.pointX === 'number' ? imgData.pointX : 0;
+                        pointY = typeof imgData.pointY === 'number' ? imgData.pointY : 0;
+                        isLocked = !!imgData.isLocked;
 
-                            updateLockUI();
-                            setTransform();
-                        };
-                        img.src = imgData.base64;
+                        updateLockUI();
+                        setTransform();
                     }
                 } else {
                     console.log("Tiada rekod gambar dijumpai dalam Firebase.");
