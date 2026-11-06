@@ -435,27 +435,28 @@
 
         // MUAT GAMBAR DARI FIREBASE BILA SISTEM DIBUKA
         window.addEventListener('DOMContentLoaded', () => {
-            db.ref('profil_pengguna/admin01').once('value').then((snapshot) => {
+            db.ref('profil_pengguna/admin01').on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const imgData = snapshot.val();
-                    
-                    previewImg.src = imgData.base64;
-                    previewImg.style.display = 'block';
-                    uploadText.style.display = 'none';
-                    reuploadBtn.style.display = 'flex';
-                    lockBtn.style.display = 'flex';
+                    if (imgData && imgData.base64) {
+                        previewImg.src = imgData.base64;
+                        previewImg.style.display = 'block';
+                        uploadText.style.display = 'none';
+                        reuploadBtn.style.display = 'flex';
+                        lockBtn.style.display = 'flex';
 
-                    scale = imgData.scale || 1;
-                    pointX = imgData.pointX || 0;
-                    pointY = imgData.pointY || 0;
-                    isLocked = imgData.isLocked || false;
+                        scale = typeof imgData.scale === 'number' ? imgData.scale : 1;
+                        pointX = typeof imgData.pointX === 'number' ? imgData.pointX : 0;
+                        pointY = typeof imgData.pointY === 'number' ? imgData.pointY : 0;
+                        isLocked = !!imgData.isLocked;
 
-                    updateLockUI();
-                    setTransform();
+                        updateLockUI();
+                        setTransform();
+                    }
                 } else {
                     console.log("Tiada rekod gambar dijumpai dalam Firebase.");
                 }
-            }).catch((error) => {
+            }, (error) => {
                 console.error("Gagal muat turun profil dari Firebase:", error);
             });
         });
