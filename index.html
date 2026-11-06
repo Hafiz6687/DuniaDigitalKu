@@ -92,7 +92,6 @@
             object-fit: contain; 
             transform-origin: center center;
             pointer-events: none; 
-            display: none; 
         }
 
         /* GAYA BUTANG ACTION (KAMERA & LOCK) */
@@ -435,7 +434,7 @@
 
         // MUAT GAMBAR DARI FIREBASE BILA SISTEM DIBUKA
         window.addEventListener('DOMContentLoaded', () => {
-            db.ref('profil_pengguna/admin01').on('value', (snapshot) => {
+            db.ref('profil_pengguna/admin01').once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     const imgData = snapshot.val();
                     if (imgData && imgData.base64) {
@@ -456,7 +455,7 @@
                 } else {
                     console.log("Tiada rekod gambar dijumpai dalam Firebase.");
                 }
-            }, (error) => {
+            }).catch((error) => {
                 console.error("Gagal muat turun profil dari Firebase:", error);
             });
         });
