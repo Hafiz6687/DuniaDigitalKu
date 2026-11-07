@@ -89,6 +89,7 @@
             object-fit: contain; 
             transform-origin: center center;
             pointer-events: none; 
+            display: none;
         }
 
         .img-action-btn {
@@ -119,17 +120,9 @@
             color: black;
         }
 
-        #remove-image-btn {
-            left: 15px;
-        }
-
-        #reupload-btn {
-            right: 55px; 
-        }
-
-        #lock-btn {
-            right: 95px; 
-        }
+        #remove-image-btn { left: 15px; }
+        #reupload-btn { right: 55px; }
+        #lock-btn { right: 95px; }
 
         .left-panel h1 {
             font-size: 4.5rem;
@@ -277,9 +270,7 @@
             box-shadow: 0 5px 15px rgba(37, 129, 247, 0.2);
         }
 
-        .dash-btn i {
-            font-size: 2.5rem;
-        }
+        .dash-btn i { font-size: 2.5rem; }
 
         .dash-btn:hover {
             background-color: #1a63c6;
@@ -299,9 +290,7 @@
             transition: background 0.3s;
         }
 
-        .logout-btn:hover {
-            background-color: #ff253a;
-        }
+        .logout-btn:hover { background-color: #ff253a; }
 
         @media (max-width: 960px) {
             .login-card { flex-direction: column; }
@@ -375,7 +364,7 @@
         <button class="logout-btn" id="logout-btn">Log Keluar</button>
     </div>
 
-    <!-- Masukkan Firebase Library (Realtime Database Sahaja) -->
+    <!-- Masukkan Firebase Library -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
@@ -394,10 +383,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // =========================================================
-        // 1. FUNGSI GAMBAR DENGAN REALTIME DATABASE (BASE64)
-        // =========================================================
-
+        // --- FUNGSI GAMBAR REALTIME DATABASE (AUTO-SYNC SEPENUHNYA) ---
         const container = document.getElementById('image-preview-container');
         const fileInput = document.getElementById('upload-image');
         const previewImg = document.getElementById('preview-img');
@@ -408,76 +394,8 @@
 
         const imageDBRef = db.ref('profil_pengguna/admin01');
 
-        let scale = 1;
-        let pointX = 0;
-        let pointY = 0;
-        let startX = 0;
-        let startY = 0;
-
-        let isPanning = false;
-        let isLocked = false; 
-
-        // Fungsi Simpan State & Base64 ke Firebase Realtime Database
-        function saveImageState() {
-            if (previewImg.src && previewImg.src.startsWith('data:image')) {
-                const imgData = {
-                    base64: previewImg.src,
-                    scale: scale,
-                    pointX: pointX,
-                    pointY: pointY,
-                    isLocked: isLocked,
-                    updatedAt: firebase.database.ServerValue.TIMESTAMP
-                };
-                
-                imageDBRef.set(imgData)
-                  .then(() => console.log("Gambar berjaya disegerakkan ke Firebase."))
-                  .catch((error) => console.error("Ralat Firebase:", error));
-            }
-        }
-
-        // MUAT GAMBAR DARI FIREBASE BILA SISTEM DIBUKA
-        window.addEventListener('DOMContentLoaded', () => {
-            imageDBRef.once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    const imgData = snapshot.val();
-                    if (imgData && imgData.base64 && imgData.base64.startsWith('data:image')) {
-                        previewImg.src = imgData.base64;
-                        previewImg.style.display = 'block';
-                        uploadText.style.display = 'none';
-                        reuploadBtn.style.display = 'flex';
-                        lockBtn.style.display = 'flex';
-                        removeImageBtn.style.display = 'flex';
-
-                        scale = typeof imgData.scale === 'number' ? imgData.scale : 1;
-                        pointX = typeof imgData.pointX === 'number' ? imgData.pointX : 0;
-                        pointY = typeof imgData.pointY === 'number' ? imgData.pointY : 0;
-                        isLocked = !!imgData.isLocked;
-
-                        updateLockUI();
-                        setTransform();
-                    }
-                } else {
-                    showEmptyImage();
-                    console.log("Tiada rekod gambar dijumpai dalam Firebase.");
-                }
-            }).catch((error) => {
-                console.error("Gagal muat turun profil dari Firebase:", error);
-            });
-        });
-
-        function showEmptyImage() {
-            previewImg.removeAttribute('src');
-            previewImg.style.display = 'none';
-            uploadText.style.display = 'block';
-            reuploadBtn.style.display = 'none';
-            lockBtn.style.display = 'none';
-            removeImageBtn.style.display = 'none';
-            scale = 1;
-            pointX = 0;
-            pointY = 0;
-            isLocked = false;
-            updateLockUI();
-        }
+        let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0;
+        let isPanning = false, isLocked = false;
 
         function updateLockUI() {
             if (isLocked) {
@@ -488,30 +406,69 @@
             } else {
                 lockBtn.innerHTML = '<i class="fa fa-unlock"></i>';
                 lockBtn.title = "Kunci Gambar";
-                reuploadBtn.style.display = 'flex';
+                reuploadBtn.style.display = previewImg.style.display === 'block' ? 'flex' : 'none';
                 container.style.cursor = 'grab';
             }
         }
 
+        function setTransform() {
+            previewImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        }
+
+        // Auto-sync masa nyata merentas pelayar dan komputer (tidak akan hilang walau refresh)
+        imageDBRef.on('value', (snapshot) => {
+            const imgData = snapshot.val();
+            if (imgData && imgData.base64) {
+                previewImg.src = imgData.base64;
+                previewImg.style.display = 'block';
+                uploadText.style.display = 'none';
+                reuploadBtn.style.display = 'flex';
+                lockBtn.style.display = 'flex';
+                removeImageBtn.style.display = 'flex';
+
+                scale = typeof imgData.scale === 'number' ? imgData.scale : 1;
+                pointX = typeof imgData.pointX === 'number' ? imgData.pointX : 0;
+                pointY = typeof imgData.pointY === 'number' ? imgData.pointY : 0;
+                isLocked = !!imgData.isLocked;
+
+                updateLockUI();
+                setTransform();
+            } else {
+                previewImg.removeAttribute('src');
+                previewImg.style.display = 'none';
+                uploadText.style.display = 'block';
+                reuploadBtn.style.display = 'none';
+                lockBtn.style.display = 'none';
+                removeImageBtn.style.display = 'none';
+                scale = 1; pointX = 0; pointY = 0; isLocked = false;
+                updateLockUI();
+            }
+        });
+
+        function saveImageState() {
+            if (previewImg.src && previewImg.src.startsWith('data:image')) {
+                const imgData = {
+                    base64: previewImg.src,
+                    scale: scale,
+                    pointX: pointX,
+                    pointY: pointY,
+                    isLocked: isLocked
+                };
+                imageDBRef.set(imgData).catch((err) => console.error(err));
+            }
+        }
+
         lockBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
+            e.stopPropagation();
             isLocked = !isLocked;
             updateLockUI();
             saveImageState();
         });
 
-        // Butang Buang Gambar (Remove)
         removeImageBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            const confirmRemove = confirm("Adakah anda pasti mahu membuang gambar ini secara kekal?");
-            if (!confirmRemove) return;
-
-            try {
-                await imageDBRef.remove();
-                showEmptyImage();
-                console.log("Gambar telah dibuang.");
-            } catch (error) {
-                console.error("Gagal membuang gambar:", error);
+            if (confirm("Adakah anda pasti mahu membuang gambar ini secara kekal?")) {
+                await imageDBRef.remove().catch(() => {});
             }
         });
 
@@ -527,44 +484,26 @@
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        
                         const MAX_WIDTH = 500;
-                        let width = img.width;
-                        let height = img.height;
-                        
+                        let width = img.width, height = img.height;
                         if (width > MAX_WIDTH) {
                             height = Math.round((height * MAX_WIDTH) / width);
                             width = MAX_WIDTH;
                         }
-                        
                         canvas.width = width;
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-
-                        previewImg.src = compressedBase64;
-                        previewImg.style.display = 'block';
-                        uploadText.style.display = 'none';
-                        reuploadBtn.style.display = 'flex'; 
-                        lockBtn.style.display = 'flex'; 
-                        removeImageBtn.style.display = 'flex';
-                        
-                        scale = 1; pointX = 0; pointY = 0;
-                        isLocked = false; 
-                        updateLockUI();
-                        setTransform();
+                        scale = 1; pointX = 0; pointY = 0; isLocked = false;
+                        previewImg.src = canvas.toDataURL('image/jpeg', 0.6);
                         saveImageState();
                     }
                     img.src = e.target.result;
                 }
                 reader.readAsDataURL(file);
             }
+            fileInput.value = '';
         });
-
-        function setTransform() {
-            previewImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
-        }
 
         container.addEventListener('mousedown', function(e) {
             if(previewImg.style.display === 'none' || isLocked || e.target.closest('.img-action-btn') || e.target === uploadText) return;
@@ -586,14 +525,7 @@
             if (isPanning) {
                 isPanning = false;
                 if(!isLocked) container.style.cursor = 'grab';
-                saveImageState(); 
-            }
-        });
-
-        window.addEventListener('mouseleave', function() {
-            if (isPanning) {
-                isPanning = false;
-                if(!isLocked) container.style.cursor = 'grab';
+                saveImageState();
             }
         });
 
@@ -601,18 +533,13 @@
             if(previewImg.style.display === 'none' || isLocked) return; 
             e.preventDefault();
             const delta = Math.sign(e.deltaY) * -1;
-            const zoomSpeed = 0.1;
-            let newScale = scale + (delta * zoomSpeed);
-            if (newScale < 0.5) newScale = 0.5; 
-            if (newScale > 5) newScale = 5;     
-            scale = newScale;
+            scale = Math.max(0.5, Math.min(5, scale + (delta * 0.1)));
             setTransform();
-            
             clearTimeout(window.zoomTimer);
             window.zoomTimer = setTimeout(saveImageState, 300);
-        }, { passive: false }); 
+        }, { passive: false });
 
-        // --- 2. FUNGSI LOG MASUK ---
+        // --- FUNGSI LOG MASUK ---
         const loginForm = document.getElementById('login-form');
         const loginSection = document.getElementById('login-section');
         const dashboardSection = document.getElementById('dashboard-section');
@@ -631,7 +558,7 @@
             }
         });
 
-        // --- 3. FUNGSI LOG KELUAR ---
+        // --- FUNGSI LOG KELUAR ---
         const logoutBtn = document.getElementById('logout-btn');
         logoutBtn.addEventListener('click', function() {
             dashboardSection.style.display = 'none';
